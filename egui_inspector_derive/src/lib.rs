@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
-#[proc_macro_derive(EguiInspect)]
+#[proc_macro_derive(EguiInspect, attributes(inspect))]
 pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let name = ast.ident;
@@ -21,8 +21,7 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
                     let field_name = field.ident.as_ref().unwrap();
                     let field_span = field.ident.as_ref().unwrap().span();
                     egui_tokens.push(quote_spanned! {field_span=>
-                        ui.add(egui::DragValue::new(&mut self.#field_name)
-                            .speed(0.02));
+                        ui.add(egui::DragValue::new(&mut self.#field_name).speed(0.02));
                     });
                 }
             }
@@ -30,7 +29,7 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
     }
     let result = quote! {
         impl EguiInspect for #name {
-            fn ui(&mut self, ui: &mut egui::Ui) {
+            fn inspect(&mut self, ui: &mut egui::Ui) {
                 #(#egui_tokens)*
             }
         }
