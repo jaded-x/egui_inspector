@@ -1,25 +1,43 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Fields, Ident, Meta, Lit, MetaNameValue};
-use darling::{FromField, FromMeta};
+use syn::{parse_macro_input, Data, DeriveInput, Field};
+use darling::FromField;
 
 
 #[derive(Debug, FromField)]
-#[darling(attributes(inspect))]
+#[darling(attributes(inspect), default)]
 struct InspectAttribute {
-    widget: Option<String>
+    widget: Option<String>,
+    min: f32,
+    max: f32,
+}
+
+impl Default for InspectAttribute {
+    fn default() -> Self {
+        Self {
+            widget: Some("DragValue".to_string()),
+            min: 0.0,
+            max: 100.0
+        }
+    }
 }
 
 #[proc_macro_derive(EguiInspect, attributes(inspect))]
 pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
     let name = ast.ident;
-    let fields = match ast.data {
+    let fields: Vec<Field> = match ast.data {
         Data::Struct(ref data) => {
             match data.fields {
-                Fields::Named(ref fields) => &fields.named,
-                Fields::Unnamed(_) => panic!("Tuple structs are not supported"),
-                Fields::Unit => panic!("Unit structs are not supported"),
+                syn::Fields::Named(ref fields) => fields.named.iter().filter(|f| {
+                    f.attrs.iter().any(|a| {
+                        if let Ok(meta) = a.parse_meta() {
+                            meta.path().is_ident("inspect")
+                        } else { false }
+                    })
+                }).cloned().collect(),
+                syn::Fields::Unnamed(_) => panic!("Tuple structs are not supported"),
+                syn::Fields::Unit => panic!("Unit structs are not supported"),
             }
         }
         _ => panic!("Only structs are supported"),
@@ -27,19 +45,20 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
 
     let field_code = fields.iter().map(|field| {
         let field_name = field.ident.as_ref().unwrap();
-        let attribute = InspectAttribute::from_field(field).unwrap_or(InspectAttribute {widget: None});
-        println!("{:?}", attribute.widget);
-        let widget_type = if let Some(widget) = attribute.widget {
+
+        let attribute = InspectAttribute::from_field(field).unwrap();
+        let (min, max) = (attribute.min, attribute.max);
+        let egui_widget = if let Some(widget) = attribute.widget {
             match widget.as_str() {
                 "DragValue" => quote! { self.#field_name.inspect_drag_value(ui); },
-                _ => quote! {}
+                "Slider" => quote! { self.#field_name.inspect_slider(ui, #min, #max); },
+                _ => panic!("Widget not valid! Field: {}.{}", name, field_name)
             }
         } else {
             quote! {}
         };
-
         quote! {
-            #widget_type
+            #egui_widget
         }
     });
 
