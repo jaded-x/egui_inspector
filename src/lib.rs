@@ -3,7 +3,7 @@ pub trait EguiInspect {
 }
 
 pub trait InspectNumeric {
-    fn inspect_drag_value(&mut self, ui: &mut egui::Ui);
+    fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &'static str);
     fn inspect_slider(&mut self, ui: &mut egui::Ui, min: f32, max: f32);
 }
 
@@ -11,7 +11,8 @@ macro_rules! impl_inspect_float {
     ($($t:ty),+) => {
         $(
             impl InspectNumeric for $t {
-                fn inspect_drag_value(&mut self, ui: &mut egui::Ui) {
+                fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &'static str) {
+                    ui.add(egui::Label::new(name).wrap(false));
                     ui.add(egui::DragValue::new(self).speed(0.01));
                 }
 

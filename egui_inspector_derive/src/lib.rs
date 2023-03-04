@@ -45,12 +45,13 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
 
     let field_code = fields.iter().map(|field| {
         let field_name = field.ident.as_ref().unwrap();
+        let name = &field_name.to_string();
 
         let attribute = InspectAttribute::from_field(field).unwrap();
         let (min, max) = (attribute.min, attribute.max);
         let egui_widget = if let Some(widget) = attribute.widget {
             match widget.as_str() {
-                "DragValue" => quote! { self.#field_name.inspect_drag_value(ui); },
+                "DragValue" => quote! { self.#field_name.inspect_drag_value(ui, #name); },
                 "Slider" => quote! { self.#field_name.inspect_slider(ui, #min, #max); },
                 _ => panic!("Widget not valid! Field: {}.{}", name, field_name)
             }
