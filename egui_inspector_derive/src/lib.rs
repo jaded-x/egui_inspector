@@ -50,7 +50,7 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
         let egui_widget = if let Some(widget) = attribute.widget {
             match widget.as_str() {
                 "DragValue" => quote! { self.#field_name.inspect_drag_value(ui, #name); },
-                "Slider" => quote! { self.#field_name.inspect_slider(ui, #min, #max); },
+                "Slider" => quote! { self.#field_name.inspect_slider(ui, #min, #max, #name); },
                 _ => panic!("Invalid Widget! Field: {}.{}", name, field_name)
             }
         } else {
