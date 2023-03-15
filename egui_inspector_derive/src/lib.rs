@@ -11,6 +11,7 @@ struct InspectAttribute {
     min: f32,
     max: f32,
     hide: bool,
+    speed: f32,
 }
 
 impl Default for InspectAttribute {
@@ -20,6 +21,7 @@ impl Default for InspectAttribute {
             min: 0.0,
             max: 100.0,
             hide: false,
+            speed: 0.01,
         }
     }
 }
@@ -47,9 +49,10 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
         if attribute.hide { return quote! {} }
 
         let (min, max) = (attribute.min, attribute.max);
+        let speed = attribute.speed;
         let egui_widget = if let Some(widget) = attribute.widget {
             match widget.as_str() {
-                "DragValue" => quote! { self.#field_name.inspect_drag_value(ui, #name); },
+                "DragValue" => quote! { self.#field_name.inspect_drag_value(ui, #name, #speed); },
                 "Slider" => quote! { self.#field_name.inspect_slider(ui, #min, #max, #name); },
                 _ => panic!("Invalid Widget! Field: {}.{}", name, field_name)
             }

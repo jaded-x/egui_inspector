@@ -4,11 +4,11 @@ macro_rules! impl_inspect_numeric {
     ($($t:ty),+) => {
         $(
             impl InspectNumeric for $t {
-                fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str) {
+                fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32) {
                     ui.horizontal(|ui| {
                         ui.label(name);
                         ui.add(egui::DragValue::new(self)
-                            .speed(0.01)
+                            .speed(speed)
                         );
                     });
                 }
@@ -46,10 +46,10 @@ macro_rules! impl_inspect_generic {
 
     (@fields $c:ident::$vec:ident($($field:ident),*), $t:ty) => {
         impl InspectNumeric for $c::$vec<$t> {
-            fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str) {
+            fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32) {
                 ui.label(name);
                 ui.horizontal(|ui| {
-                    $( self.$field.inspect_drag_value(ui, stringify!($field)); )*
+                    $( self.$field.inspect_drag_value(ui, stringify!($field), speed); )*
                 });
             }
 
