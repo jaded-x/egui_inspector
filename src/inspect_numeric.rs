@@ -13,11 +13,10 @@ macro_rules! impl_inspect_numeric {
                     });
                 }
 
-                fn inspect_slider(&mut self, ui: &mut egui::Ui, min: f32, max: f32, name: &str) {
+                fn inspect_slider(&mut self, ui: &mut egui::Ui, min: f32, max: f32, name: &str, speed: f64) {
                     ui.horizontal(|ui| {
                         ui.add(egui::Slider::new(self, (min as $t)..=(max as $t))
-                            .drag_value_speed(0.01)
-                            .step_by(0.01)
+                            .drag_value_speed(speed)
                         );
                         ui.label(name);
                     });
@@ -53,10 +52,10 @@ macro_rules! impl_inspect_generic {
                 });
             }
 
-            fn inspect_slider(&mut self, ui: &mut egui::Ui, min: f32, max: f32, name: &str) {
+            fn inspect_slider(&mut self, ui: &mut egui::Ui, min: f32, max: f32, name: &str, speed: f64) {
                 ui.vertical(|ui| {
                     ui.label(name);
-                    $( self.$field.inspect_slider(ui, min, max, stringify!($field)); )+
+                    $( self.$field.inspect_slider(ui, min, max, stringify!($field), speed); )+
                 });
             }
         }
