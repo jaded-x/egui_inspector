@@ -52,8 +52,8 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
         let speed = attribute.speed;
         let egui_widget = if let Some(widget) = attribute.widget {
             match widget.as_str() {
-                "DragValue" => quote! { self.#field_name.inspect_drag_value(ui, #name, #speed); },
-                "Slider" => quote! { self.#field_name.inspect_slider(ui, #min, #max, #name, #speed as f64); },
+                "DragValue" => quote! { responses.extend(self.#field_name.inspect_drag_value(ui, #name, #speed)); },
+                "Slider" => quote! { responses.extend(self.#field_name.inspect_slider(ui, #min, #max, #name, #speed as f64)); },
                 _ => panic!("Invalid Widget! Field: {}.{}", name, field_name)
             }
         } else {
@@ -65,8 +65,10 @@ pub fn egui_inspector_derive(input: TokenStream) -> TokenStream {
 
     let output = quote! {
         impl EguiInspect for #name {
-            fn inspect(&mut self, ui: &mut egui::Ui) {
+            fn inspect(&mut self, ui: &mut egui::Ui) -> Vec<egui::Response> {
+                let mut responses: Vec<egui::Response> = Vec::new();
                 #(#field_code)*
+                responses
             }
         }
     };
