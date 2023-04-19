@@ -6,7 +6,7 @@ pub trait EguiInspect {
 }
 
 pub trait InspectNumeric {
-    fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32) -> Vec<egui::Response>;
+    fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32, min: f32, max: f32) -> Vec<egui::Response>;
     fn inspect_slider(&mut self, ui: &mut egui::Ui, min: f32, max: f32, name: &str, speed: f64) -> Vec<egui::Response>;
 }
 

@@ -4,12 +4,13 @@ macro_rules! impl_inspect_numeric {
     ($($t:ty),+) => {
         $(
             impl InspectNumeric for $t {
-                fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32) -> Vec<egui::Response> {
+                fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32, min: f32, max: f32) -> Vec<egui::Response> {
                     let mut responses: Vec<egui::Response> = Vec::new();
                     ui.horizontal(|ui| {
                         ui.label(name);
                         responses.push(ui.add(egui::DragValue::new(self)
                             .speed(speed)
+                            .clamp_range(min..=max)
                         ));
                     });
 
@@ -51,12 +52,12 @@ macro_rules! impl_inspect_generic {
 
     (@fields $c:ident::$vec:ident($($field:ident),*), $t:ty) => {
         impl InspectNumeric for $c::$vec<$t> {
-            fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32) -> Vec<egui::Response> {
+            fn inspect_drag_value(&mut self, ui: &mut egui::Ui, name: &str, speed: f32, min: f32, max: f32) -> Vec<egui::Response> {
                 let mut responses: Vec<egui::Response> = Vec::new();
                 
                 ui.label(name);
                 ui.horizontal(|ui| {
-                    $( responses.extend(self.$field.inspect_drag_value(ui, stringify!($field), speed)); )*
+                    $( responses.extend(self.$field.inspect_drag_value(ui, stringify!($field), speed, min, max)); )*
                 });
 
                 responses
